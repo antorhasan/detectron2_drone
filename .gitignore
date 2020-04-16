@@ -2,10 +2,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+env/
 # C extensions
+data/
 *.so
-
+home/
+new_home/
+output/
+.vscode
 # Distribution / packaging
 .Python
 build/
