@@ -1,0 +1,21 @@
+var promise = Cesium.IonResource.fromAssetId(71556)
+        .then(function (resource) {
+            var xx = Cesium.GeoJsonDataSource.load(resource);
+            viewer.zoomTo(xx);
+            return Cesium.GeoJsonDataSource.load(resource);
+        })
+        .then(function (dataSource) {
+            return viewer.dataSources.add(dataSource);
+        })
+        .then(function(dataSource) {
+            var p = dataSource.entities.values;
+            for (var i = 0; i < p.length; i++) {
+                p[i].polygon.extrudedHeight = p[i].properties.height;
+        }
+        })
+        .then(function(dataSource){
+            return dataSource;
+        })
+        .otherwise(function (error) {
+            console.log(error);
+        });
