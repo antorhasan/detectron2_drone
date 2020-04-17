@@ -1,5 +1,10 @@
 import cv2
 import json
+import sys
+from os import listdir
+from os.path import isfile, join
+import numpy as np
+
 
 def make_train_single():
     '''crop the appropriate train segment from original image'''
@@ -70,13 +75,66 @@ def img_crop_prctg():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+#def combine():
+def coor_to_geojson():
+    coor_json_dir = '../buildings.json'
+    geojson_dir = '../geo_final.json'
+
+    empt = {"type": "FeatureCollection", "features": []}
+    with open(coor_json_dir) as json_file:
+        data = json.load(json_file)
+
+        for i in range(1,len(data)+1):
+            temp_list = []
+            for j in range(len(data[str(i)][0])):
+                temp_list.append([data[str(i)][0][j][1],data[str(i)][0][j][0]])
+            temp_list.append([data[str(i)][0][0][1],data[str(i)][0][0][0]])
+            empt["features"].append({"id": str(i),"type": "Feature","properties":{"height":data[str(i)][1]},"geometry":{"type":"Polygon", "coordinates":[temp_list]}})
+            #print(i)
+        print(empt)
+    
+
+    with open(geojson_dir, 'w') as f:
+        json.dump(empt, f)
+    
+
+def merge_msk():
+    pixel_coun = 256
+    path = './new_home/output/'
+
+    num_row = max([int(f.split('_')[0]) for f in listdir(path) if isfile(join(path, f))])
+    num_column = max([int(f.split('_')[1].split('.')[0]) for f in listdir(path) if isfile(join(path, f))])
+    
+    for i in range(num_row):
+        for j in range(num_column):
+            print(j)
+            if j%2 !=0 and j!=0:
+                img_0 = cv2.imread(path + str(i)+'_'+str(j-1)+'.jpg', 0)
+                img_1 = cv2.imread(path + str(i)+'_'+str(j)+'.jpg', 0)
+                img_2 = cv2.imread(path + str(i)+'_'+str(j+1)+'.jpg', 0)
+
+                print(img_2.shape,img_1.shape,img_0.shape)
+                #img_0[:,pixel_coun:] = img_1[:,:pixel_coun] 
+                #img_2[:,:pixel_coun] = img_1[:,pixel_coun:]
+
+                img_0[:,pixel_coun:] = np.where(img_1[:,0:pixel_coun]==255, 255, img_0[:,pixel_coun:])
+                img_2[:,:pixel_coun] = np.where(img_1[:,pixel_coun:]==255, 255, img_2[:,:pixel_coun])
+                
+                img = np.concatenate((img_0,img_2), axis=1)
+
+                cv2.imwrite('./temp.jpg', img)
+                print(asd)
+            
+
+
+    
 
 #make_train_single()
 #crop_train()
 if __name__ == "__main__":
-    
+    merge_msk()
     #img_crop_prctg()
-    crop_train()
+    #crop_train()
     #labelbox_to_mskrcnn()
     pass
 
