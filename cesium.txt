@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Grant CesiumJS access to your ion assets
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YTRkZGQxOS0wZGJjLTQzYTktOTJhZC02MTZkMmExODEzY2UiLCJpZCI6MjAxNTQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzY4Mzc4Nzd9.q1SwfTmFLZsR2z9-EgLinQMGrdIOCBBd4794IL9mfFc';
 
@@ -22,3 +23,29 @@ var promise = Cesium.IonResource.fromAssetId(71056)
         console.log(error);
     });
 
+=======
+// Grant CesiumJS access to your ion assets
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YTRkZGQxOS0wZGJjLTQzYTktOTJhZC02MTZkMmExODEzY2UiLCJpZCI6MjAxNTQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzY4Mzc4Nzd9.q1SwfTmFLZsR2z9-EgLinQMGrdIOCBBd4794IL9mfFc';
+
+var viewer = new Cesium.Viewer('cesiumContainer');
+
+var promise = Cesium.IonResource.fromAssetId(71056)
+    .then(function (resource) {
+        return Cesium.GeoJsonDataSource.load(resource);
+    })
+    .then(function (dataSource) {
+        return viewer.dataSources.add(dataSource);
+    })
+    .then(function(dataSource) {
+        var p = dataSource.entities.values;
+        for (var i = 0; i < p.length; i++) {
+            p[i].polygon.extrudedHeight = p[i].properties.height;
+    }
+    })
+
+    
+    .otherwise(function (error) {
+        console.log(error);
+    });
+
+>>>>>>> f0615e03475350f291b5d0d75a8d95e5c3256f78
