@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import rasterio
 from rasterio.transform import Affine
 import numpy as np
@@ -58,7 +57,6 @@ with rasterio.open(
     interleave=interleave,
     nodata=nodata
 ) as dst:
-=======
 import rasterio
 from rasterio.transform import Affine
 import numpy as np
@@ -118,5 +116,4 @@ with rasterio.open(
     interleave=interleave,
     nodata=nodata
 ) as dst:
->>>>>>> f0615e03475350f291b5d0d75a8d95e5c3256f78
     dst.write(img)
