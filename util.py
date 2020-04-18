@@ -4,6 +4,7 @@ import sys
 from os import listdir
 from os.path import isfile, join
 import numpy as np
+import rasterio
 
 
 def make_train_single():
@@ -23,9 +24,9 @@ def make_train_single():
 
     cv2.imwrite('./home/val2.jpg', img)
 
-def crop_train(overlap=True):
+def crop_train(overlap=True, window_size=512):
     img = cv2.imread('./new_home/odm/odm_ortho_crop.png',1)
-    size = 512
+    size = window_size
     num_ver = int(img.shape[0] / size)
     num_hor = int(img.shape[1] / size)
     
@@ -46,7 +47,7 @@ def crop_train(overlap=True):
 def labelbox_to_mskrcnn():
     '''reads the json output from labelbox json export and converts it into a suitable
     json format to be consumed by detectron 2 maskrcnn'''
-    box_json_dir = './new_home/export-2020-04-10T19_54_39.610Z.json'
+    box_json_dir = './new_home/export-2020-04-18T12_19_59.204Z.json'
     msk_json_dir = './new_home/train_crop.json'
     empt = {}
     with open(box_json_dir) as json_file:
@@ -67,9 +68,12 @@ def labelbox_to_mskrcnn():
         json.dump(empt, f)
 
 def img_crop_prctg():
+    
     img = cv2.imread('./new_home/odm/odm_orthophoto.png')
+    
+    
     img = img[2480:5552,2350:5934,:]
-    cv2.imwrite('./new_home/odm/odm_ortho_cropn.png',img)
+    cv2.imwrite('./new_home/odm/odm_ortho_crop.png',img)
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     cv2.imshow('image',img)
     cv2.waitKey(0)
@@ -77,8 +81,8 @@ def img_crop_prctg():
 
 #def combine():
 def coor_to_geojson():
-    coor_json_dir = '../buildings.json'
-    geojson_dir = '../geo_final.json'
+    coor_json_dir = './data/buildings.json'
+    geojson_dir = './data/geo_final.json'
 
     empt = {"type": "FeatureCollection", "features": []}
     with open(coor_json_dir) as json_file:
@@ -91,7 +95,7 @@ def coor_to_geojson():
             temp_list.append([data[str(i)][0][0][1],data[str(i)][0][0][0]])
             empt["features"].append({"id": str(i),"type": "Feature","properties":{"height":data[str(i)][1]},"geometry":{"type":"Polygon", "coordinates":[temp_list]}})
             #print(i)
-        print(empt)
+        #print(empt)
     
 
     with open(geojson_dir, 'w') as f:
@@ -99,31 +103,42 @@ def coor_to_geojson():
     
 
 def merge_msk():
-    pixel_coun = 256
+    '''overlapping output of binary masks are merged to generate mask of the whole area'''
+    thresh = 230
+    pixel_coun = 128
     path = './new_home/output/'
 
-    num_row = max([int(f.split('_')[0]) for f in listdir(path) if isfile(join(path, f))])
-    num_column = max([int(f.split('_')[1].split('.')[0]) for f in listdir(path) if isfile(join(path, f))])
+    num_row = max([int(f.split('_')[0]) for f in listdir(path) if isfile(join(path, f))]) + 1
+    num_column = max([int(f.split('_')[1].split('.')[0]) for f in listdir(path) if isfile(join(path, f))]) + 1
     
+    temp_list = []
+    #print(num_row, num_column)
     for i in range(num_row):
         for j in range(num_column):
-            print(j)
+            #print(i,j)
             if j%2 !=0 and j!=0:
-                img_0 = cv2.imread(path + str(i)+'_'+str(j-1)+'.jpg', 0)
+
+                if j == 1 :
+                    img_0 = cv2.imread(path + str(i)+'_'+str(j-1)+'.jpg', 0)
+                    height = img_0.shape[0]
+                    width = img_0.shape[1]
                 img_1 = cv2.imread(path + str(i)+'_'+str(j)+'.jpg', 0)
                 img_2 = cv2.imread(path + str(i)+'_'+str(j+1)+'.jpg', 0)
 
-                print(img_2.shape,img_1.shape,img_0.shape)
-                #img_0[:,pixel_coun:] = img_1[:,:pixel_coun] 
-                #img_2[:,:pixel_coun] = img_1[:,pixel_coun:]
-
-                img_0[:,pixel_coun:] = np.where(img_1[:,0:pixel_coun]==255, 255, img_0[:,pixel_coun:])
-                img_2[:,:pixel_coun] = np.where(img_1[:,pixel_coun:]==255, 255, img_2[:,:pixel_coun])
+                img_0[:,-pixel_coun:] = np.where(img_1[:,int((width/2)-pixel_coun):int(width/2)]>thresh, 255, img_0[:,-pixel_coun:])
+                img_2[:,0:pixel_coun] = np.where(img_1[:,int(width/2):int(width/2)+pixel_coun]>thresh, 255, img_2[:,0:pixel_coun])
                 
-                img = np.concatenate((img_0,img_2), axis=1)
+                img_0 = np.concatenate((img_0,img_2), axis=1)
+                #cv2.imwrite('./data/trial.jpg', img_0)
+                #print(asd)
+        if i == 0 :
+            final_img = img_0
+        else :
+            final_img[-pixel_coun:,:] = np.where(img_0[int((height/2)-pixel_coun):int(height/2),:]>thresh, 255, final_img[-pixel_coun:,:])
+            final_img = np.concatenate((final_img,img_0[int(height/2):,:]), axis=0)
 
-                cv2.imwrite('./temp.jpg', img)
-                print(asd)
+    cv2.imwrite('./data/temp.jpg', final_img)
+    #print(asd)
             
 
 
@@ -132,7 +147,8 @@ def merge_msk():
 #make_train_single()
 #crop_train()
 if __name__ == "__main__":
-    merge_msk()
+    coor_to_geojson()
+    #merge_msk()
     #img_crop_prctg()
     #crop_train()
     #labelbox_to_mskrcnn()

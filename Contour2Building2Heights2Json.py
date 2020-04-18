@@ -22,7 +22,11 @@ def choosepixel(path):
     #plt = plt.figure(figsize=(10,10))
     plt.show()
 
-
+def cropandscale(path_png):
+    im = cv2.imread(path_png, cv2.IMREAD_GRAYSCALE)
+    #print('shape', im.shape)
+    im2 = im[1674:2554, 1796:5280] #crop desired part of image
+    resized = cv2.resize(im2, (9216, 1536), interpolation=cv2.INTER_CUBIC) #(width,height) resize to desired size
 
 
 

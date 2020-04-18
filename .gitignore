@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 env/
+jango_env/
 # C extensions
 data/
 *.jpg
