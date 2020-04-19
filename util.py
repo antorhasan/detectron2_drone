@@ -137,7 +137,7 @@ def merge_msk():
             final_img[-pixel_coun:,:] = np.where(img_0[int((height/2)-pixel_coun):int(height/2),:]>thresh, 255, final_img[-pixel_coun:,:])
             final_img = np.concatenate((final_img,img_0[int(height/2):,:]), axis=0)
 
-    cv2.imwrite('./data/temp.jpg', final_img)
+    cv2.imwrite('./data/merged_msk.jpg', final_img)
     #print(asd)
             
 
@@ -147,8 +147,8 @@ def merge_msk():
 #make_train_single()
 #crop_train()
 if __name__ == "__main__":
-    coor_to_geojson()
-    #merge_msk()
+    #coor_to_geojson()
+    merge_msk()
     #img_crop_prctg()
     #crop_train()
     #labelbox_to_mskrcnn()
