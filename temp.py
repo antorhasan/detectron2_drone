@@ -1,8 +1,14 @@
 import numpy as np 
+import pyproj
+from rasterio.crs import CRS
 
-arr = np.asarray([ 1.0003152,	0.0184817,	0.0000000,	232201.6144207 ],
-                [ -0.0184817,	1.0003152,	0.0000000,	2628399.6197516 ],
-                [ 0.0000001,	0.0000001,	1.0000000,	0.0000000 ],
-                [ 0.0000000,	0.0000000,	0.0000000,	1.0000000 ])
+crs = CRS.from_dict(init='epsg:32612')
 
-print(arr)
+in_proj = pyproj.Proj(init="epsg:{}".format(crs.to_epsg()))
+out_proj = pyproj.Proj(init="epsg:4326")
+
+lons, lats = pyproj.transform(in_proj, out_proj, 232201.6144207, 2628399.6197516)
+lons = round(lons,6)
+lats = round(lats,6)
+
+print(180+lons,lats)
