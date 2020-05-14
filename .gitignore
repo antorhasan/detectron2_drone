@@ -9,6 +9,7 @@ data/
 *.jpg
 *.so
 home/
+
 new_home/
 output/
 .vscode
