@@ -139,16 +139,33 @@ def merge_msk():
 
     cv2.imwrite('./data/merged_msk.jpg', final_img)
     #print(asd)
-            
 
 
-    
+from GPSPhoto import gpsphoto
 
-#make_train_single()
-#crop_train()
+def wrt_geo_viz():
+    '''given a directory of jpeg images, a geojson file is written with long,lat and alt for each image'''
+
+    path = '/media/antor/Transcend/drone/data/dhanmondi/100MEDIA/'
+    json_out_path = './new_home/geojson_viz.json'
+
+    file_lst = [f for f in listdir(path) if isfile(join(path, f))]
+    empt = {"type": "FeatureCollection", "features": []}
+
+    print('writing long, lat to geojson file ......')
+    for i in range(len(file_lst)):
+        file_path = join(path, file_lst[i])
+        data = gpsphoto.getGPSData(file_path)
+        empt["features"].append({"id": str(file_lst[i]),"type": "Feature","geometry":{"type":"Point", "coordinates":[data['Longitude'],data['Latitude']]},"properties":{"altitude":data['Altitude']}})
+
+    with open(json_out_path, 'w') as f:
+        json.dump(empt, f)
+
+
 if __name__ == "__main__":
+    #wrt_geo_viz()
     #coor_to_geojson()
-    merge_msk()
+    #merge_msk()
     #img_crop_prctg()
     #crop_train()
     #labelbox_to_mskrcnn()

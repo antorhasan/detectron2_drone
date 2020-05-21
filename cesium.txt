@@ -1,4 +1,5 @@
 // Grant CesiumJS access to your ion assets
+// make 3d blocks viewable from geojson
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YTRkZGQxOS0wZGJjLTQzYTktOTJhZC02MTZkMmExODEzY2UiLCJpZCI6MjAxNTQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzY4Mzc4Nzd9.q1SwfTmFLZsR2z9-EgLinQMGrdIOCBBd4794IL9mfFc';
 
 var viewer = new Cesium.Viewer('cesiumContainer');
@@ -21,4 +22,29 @@ var promise = Cesium.IonResource.fromAssetId(71056)
     .otherwise(function (error) {
         console.log(error);
     });
+
+
+
+// Grant CesiumJS access to your ion assets
+// resize point markers for geojson
+Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YTRkZGQxOS0wZGJjLTQzYTktOTJhZC02MTZkMmExODEzY2UiLCJpZCI6MjAxNTQsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzY4Mzc4Nzd9.q1SwfTmFLZsR2z9-EgLinQMGrdIOCBBd4794IL9mfFc";
+
+var viewer = new Cesium.Viewer("cesiumContainer");
+
+var promise = Cesium.IonResource.fromAssetId(103382)
+  .then(function (resource) {
+    return Cesium.GeoJsonDataSource.load(resource,{
+    stroke: Cesium.Color.HOTPINK,
+    fill: Cesium.Color.PINK,
+    markerSize: 10});
+  })
+  .then(function (dataSource) {
+    return viewer.dataSources.add(dataSource);
+  })
+  .then(function (dataSource) {
+    return viewer.zoomTo(dataSource);
+  })
+  .otherwise(function (error) {
+    console.log(error);
+  });
 
