@@ -156,14 +156,18 @@ def wrt_geo_viz():
     for i in range(len(file_lst)):
         file_path = join(path, file_lst[i])
         data = gpsphoto.getGPSData(file_path)
-        empt["features"].append({"id": str(file_lst[i]),"type": "Feature","geometry":{"type":"Point", "coordinates":[data['Longitude'],data['Latitude']]},"properties":{"altitude":data['Altitude']}})
+        empt["features"].append({"id": str(file_lst[i]),"type": "Feature","geometry":{"type":"Point", "coordinates":[data['Longitude'],data['Latitude']]},
+                            "properties":{"image_id":str(file_lst[i]),"longitude":data['Longitude'],"latitude":data['Latitude'],"altitude":data['Altitude']}})
+
+        if i%501 == 500 or i==len(file_lst) :
+            print(str(i)+' images processed....')
 
     with open(json_out_path, 'w') as f:
         json.dump(empt, f)
 
 
 if __name__ == "__main__":
-    #wrt_geo_viz()
+    wrt_geo_viz()
     #coor_to_geojson()
     #merge_msk()
     #img_crop_prctg()
