@@ -165,9 +165,23 @@ def wrt_geo_viz():
     with open(json_out_path, 'w') as f:
         json.dump(empt, f)
 
+def json_to_imgid():
+    '''given a json file as input, returns a list of image filenames'''
+
+    json_path = './new_home/trail.geojson'
+
+    img_ids = []
+    with open(json_path) as json_file:
+        data = json.load(json_file)
+        for i in range(len(data['features'])):
+            img_ids.append(data['features'][i]['properties']['image_id'])
+    
+    return img_ids
+
 
 if __name__ == "__main__":
-    wrt_geo_viz()
+    json_to_imgid()
+    #wrt_geo_viz()
     #coor_to_geojson()
     #merge_msk()
     #img_crop_prctg()
