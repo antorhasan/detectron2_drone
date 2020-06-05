@@ -3,13 +3,15 @@ from os.path import isfile, join
 from PIL import Image 
 import cv2 
 import numpy as np 
-import tifffile as tiff
-import matplotlib.pyplot as plt
+#import tifffile as tiff
+#import matplotlib.pyplot as plt
 from rasterio.windows import Window
 from collections import Counter
 import rasterio
 from rasterio.enums import Resampling
 from rasterio.windows import from_bounds
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import pyproj
 import json
 
@@ -49,29 +51,34 @@ def pix_to_latlon(path_to_tif, px_row, px_col):
     print(lats, lons) 
 
 
-def pix_to_latlon_2(path_to_tif, pxrow, pxcol):
+def pix_to_latlon_2(path_to_tif, cnvrt_prj,pxrow, pxcol):
     '''change the px_row and px_col to the pixel index for lat long transformation'''
     #px_row = 100
     #px_col = 100
 
     alllons = []
     alllats = []
-    for i in range(len(pxrow)):
-        with rasterio.open(path_to_tif) as map_layer:
+    with rasterio.open(path_to_tif) as map_layer:
+        crs = map_layer.crs
+        for i in range(len(pxrow)):
             pixels2coords = map_layer.xy(pxrow[i], pxcol[i])  #input px, py
-            crs = map_layer.crs
+            x, y = pixels2coords
 
-        x, y = pixels2coords
+            if cnvrt_prj == True :
+                in_proj = pyproj.Proj(init="epsg:{}".format(crs.to_epsg()))
+                out_proj = pyproj.Proj(init="epsg:4326")
 
-        in_proj = pyproj.Proj(init="epsg:{}".format(crs.to_epsg()))
-        out_proj = pyproj.Proj(init="epsg:4326")
+                #print('in_prj : ', crs.to_epsg(),' out_prj : ', '4326')
 
-        lons, lats = pyproj.transform(in_proj, out_proj, x, y)
-        lons = round(lons,6)
-        lats = round(lats,6)
-        alllons.append(lons)
-        alllats.append(lats)
-    
+                lons, lats = pyproj.transform(in_proj, out_proj, x, y)
+                lons = round(lons,6)
+                lats = round(lats,6)
+                alllons.append(lons)
+                alllats.append(lats)
+            else :
+                alllons.append(x)
+                alllats.append(y)
+        
     return alllats, alllons
 
 
@@ -183,24 +190,27 @@ def contour_find(imagepath, dsmpath, orthophotopath, offsethor, offsetver):
 
     return buildingdict
 
+if __name__ == "__main__":
+    mergedimagepath = "D:\\3D Mapping\\Code\\Corona Datalab\\Code\\Antor bhai Segmentation\\PART 3\\mergedvertical4.png"
+    dsmpath = "D:\\3D Mapping\\Code\\Corona Datalab\\Code\\Antor bhai Segmentation\\PART 3\\croppedandscaledBIG3.png"
+    orthophotopath = "D:\\3D Mapping\\Code\\Corona Datalab\\Code\\Antor bhai Segmentation\\PART 3\\odm_orthophoto.original.tif"
+    roadpixelintensity = 112
+    offsetver = 2480
+    offsethor = 2350
 
-mergedimagepath = "D:\\3D Mapping\\Code\\Corona Datalab\\Code\\Antor bhai Segmentation\\PART 3\\mergedvertical4.png"
-dsmpath = "D:\\3D Mapping\\Code\\Corona Datalab\\Code\\Antor bhai Segmentation\\PART 3\\croppedandscaledBIG3.png"
-orthophotopath = "D:\\3D Mapping\\Code\\Corona Datalab\\Code\\Antor bhai Segmentation\\PART 3\\odm_orthophoto.original.tif"
-roadpixelintensity = 112
-offsetver = 2480
-offsethor = 2350
+    SPAN = 40
+    INTERVAL = 10
 
-SPAN = 40
-INTERVAL = 10
+    buildingdict = contour_find(mergedimagepath, dsmpath, orthophotopath, offsethor, offsetver)
+    #print(buildingdict)
 
-buildingdict = contour_find(mergedimagepath, dsmpath, orthophotopath, offsethor, offsetver)
-#print(buildingdict)
+    with open('buildings_6.json', 'w') as fp:
+        json.dump(buildingdict, fp)
 
-with open('buildings_6.json', 'w') as fp:
-    json.dump(buildingdict, fp)
+    #choosepixel(dsmpath)
+    pass
 
-#choosepixel(dsmpath)
+
 
 
 

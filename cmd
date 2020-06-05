@@ -3,3 +3,6 @@ sudo docker run -ti -m 16GB --rm -v /media/antor/work1/projects/odm/datasets:/da
 
 
 
+
+sudo docker run -ti -m 16GB --rm -v /media/antor/work1/projects/odm/datasets:/datasets opendronemap/odm --project-path /datasets project --dsm --orthophoto-resolution 5 --dem-resolution 5 --orthophoto-cutline --pc-csv --pc-las --crop 3 --verbose
+

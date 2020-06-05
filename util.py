@@ -5,6 +5,8 @@ from os import listdir
 from os.path import isfile, join
 import numpy as np
 import rasterio
+import shutil
+import os
 
 
 def make_train_single():
@@ -168,7 +170,7 @@ def wrt_geo_viz():
 def json_to_imgid():
     '''given a json file as input, returns a list of image filenames'''
 
-    json_path = './new_home/trail.geojson'
+    json_path = './new_home/drn_dep4.geojson'
 
     img_ids = []
     with open(json_path) as json_file:
@@ -178,9 +180,17 @@ def json_to_imgid():
     
     return img_ids
 
+def bulk_copy():
+    list_img = json_to_imgid()
+    
+    for i in range(len(list_img)):
+        print(i)
+        os.system('cp '+'/media/antor/Transcend/drone/data/dhanmondi/100MEDIA/'+list_img[i]+' /media/antor/Transcend/temp/')
 
 if __name__ == "__main__":
-    json_to_imgid()
+    
+
+    #shutil.copy('/media/antor/Transcend/drone/data/dhanmondi/100MEDIA/'+list_img[i],'/media/antor/Transcend/temp/')
     #wrt_geo_viz()
     #coor_to_geojson()
     #merge_msk()
