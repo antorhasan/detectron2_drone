@@ -49,8 +49,8 @@ def crop_train(overlap=True, window_size=512):
 def labelbox_to_mskrcnn():
     '''reads the json output from labelbox json export and converts it into a suitable
     json format to be consumed by detectron 2 maskrcnn'''
-    box_json_dir = './new_home/export-2020-04-18T12_19_59.204Z.json'
-    msk_json_dir = './new_home/train_crop.json'
+    box_json_dir = './new_home/temp11.json'
+    msk_json_dir = './new_home/train_dhan.json'
     empt = {}
     with open(box_json_dir) as json_file:
         data = json.load(json_file)
@@ -186,10 +186,111 @@ def bulk_copy():
     for i in range(len(list_img)):
         print(i)
         os.system('cp '+'/media/antor/Transcend/drone/data/dhanmondi/100MEDIA/'+list_img[i]+' /media/antor/Transcend/temp/')
+        
+from crop_sc import read_tally_from_file, find_boundary
+
+
+def mrg_dhan_msk():
+    path_to_msk = './new_home/output/'
+    file_lst = [int(f.split('.')[0]) for f in listdir(path_to_msk) if isfile(join(path_to_msk, f))]
+    file_lst.sort()
+    #print(file_lst)
+    #print(asd)
+
+    start_offset = 4096
+    constant = 3072
+    fixing_ovrlp_win = int(constant/2)
+    bin_thresh = 230
+    tif_width = 44699
+    tif_height = 41861
+
+    tallies = read_tally_from_file()
+    tallylen = len(tallies)
+    #print(tallylen)
+    #print(asd)
+    overlap = True
+
+    if overlap == True :
+        window_step = constant//2
+    else :
+        window_step = constant
+
+    top_blank = 0
+    bottom_blank = 0
+
+    i = 0
+    minus_flag = True
+    row_flag = True
+
+    while i < tallylen:
+        if tallies[i][0] == -1 and tallies[i][1] == -1 and minus_flag == True:
+            top_blank += 1
+
+        if tallies[i][0] == -1 and tallies[i][1] == -1 and minus_flag == False:
+            bottom_blank += 1
+
+        if tallies[i][0] != -1 and tallies[i][1] != -1:
+            minus_flag = False
+
+            startcol, stopcol = find_boundary(i, i+constant, tallies)
+
+            startcol = startcol + start_offset
+            stopcol = stopcol - start_offset
+
+            #print('starts are', startcol, stopcol)
+            row_img = np.zeros((constant,startcol))
+
+            #print(row_img.shape)
+            if (stopcol - startcol) < constant:
+                i += 1
+                continue
+            print('stopcol', stopcol)
+            for j in range(startcol, stopcol, window_step):
+                print(j)
+                if j == startcol :
+                    img = cv2.imread('./new_home/output/'+str(file_lst.pop(0))+'.jpg',0)
+                    row_img = np.concatenate((row_img,img),axis=1)
+
+                else :
+                    img = cv2.imread('./new_home/output/'+str(file_lst.pop(0))+'.jpg',0)
+                    row_img[:,-fixing_ovrlp_win:] = np.where(img[:,0:fixing_ovrlp_win]>bin_thresh, 255, row_img[:,-fixing_ovrlp_win:])
+                    row_img = np.concatenate((row_img,img[:,-fixing_ovrlp_win:]),axis=1)
+                    #print(row_img.shape)
+                    #print(asd)
+            row_img = np.concatenate((row_img,np.zeros((constant,tif_width-(j+constant)))),axis=1)
+            print(row_img.shape)
+            #cv2.imwrite('./data/dhanmondi/temp.jpg',row_img)
+            #print(asd)
+            i += ((window_step) - 1)
+                        
+            if row_flag == True :
+                vert_img = row_img
+                i += ((window_step) - 1)
+                row_flag = False
+                #print('hwll')
+                continue
+            #print(row_flag)
+            if row_flag == False :
+                vert_img[-fixing_ovrlp_win:,:] = np.where(row_img[0:fixing_ovrlp_win,:]>bin_thresh, 255, vert_img[-fixing_ovrlp_win:,:])
+                vert_img = np.concatenate((vert_img,row_img[-fixing_ovrlp_win:,:]),axis=0)
+    
+        i += 1
+    
+    #vert_img = np.concatenate((np.zeros((top_blank,tif_width)),vert_img),axis=0)
+    #vert_img = np.concatenate((vert_img, np.zeros((bottom_blank,tif_width))),axis=0)
+
+    cv2.imwrite('./data/dhanmondi/merged_0.jpg', vert_img)
+
+
+
 
 if __name__ == "__main__":
-    
-
+    mrg_dhan_msk()
+    """ img = cv2.imread('./data/dhanmondi/temp.jpg',0)
+    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    cv2.imshow('image',img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows() """
     #shutil.copy('/media/antor/Transcend/drone/data/dhanmondi/100MEDIA/'+list_img[i],'/media/antor/Transcend/temp/')
     #wrt_geo_viz()
     #coor_to_geojson()

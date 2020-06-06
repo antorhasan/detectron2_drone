@@ -97,28 +97,37 @@ def find_boundary(start, stop, tallies):
 # convert numpy to grid sized images
 def make_images(nparray, tallies):
     global cnt
+    overlap = True
+    start_offset = 4096
     row_ends = []
-    constant = 2048
+    constant = 3072
     count = 0
     tallylen = len(tallies)
     i = 0
+
+    if overlap == True :
+        window_step = constant//2
+    else :
+        window_step = constant
+
     while i < tallylen:
         if tallies[i][0] != -1 and tallies[i][1] != -1:
             startcol, stopcol = find_boundary(i, i+constant, tallies)
 
-            startcol = startcol + 1536
-            stopcol = stopcol - 1536
+            startcol = startcol + start_offset
+            stopcol = stopcol - start_offset
 
             print('starts are', startcol, stopcol)
             if (stopcol - startcol) < constant:
                 i += 1
                 continue
-            for j in range(startcol, stopcol, constant//2):
+            
+            for j in range(startcol, stopcol, window_step):
                 temp_array = nparray[i:i+constant, j:j+constant, :]
 
                 save_image(temp_array)
                 count += 1
-            i += ((constant//2) - 1)
+            i += ((window_step) - 1)
             row_ends.append(cnt-1)
         i += 1
 
@@ -150,7 +159,7 @@ def read_tally_from_file():
         a, b = int(temp[0]), int(temp[1])
         tallies.append([a, b])
 
-    create_shp(tallies)
+    #create_shp(tallies)
     #print(tallies)
     file.close()
     return tallies
@@ -161,7 +170,7 @@ def create_shp(tallies):
     left_id = []
     right_id = []
     off_set = 3072
-    
+    #tallies = tallies[0:20000]
     print('introducing offset.....')
     for i in range(len(tallies)):
         if tallies[i][0] != -1 and tallies[i][1] != -1 :
@@ -198,7 +207,7 @@ def create_shp(tallies):
 
 def msk_raster():
 
-    with fiona.open("./data/dhanmondi/shp/polygon0.shp", "r") as shapefile:
+    with fiona.open("./data/dhanmondi/shp/temp.shp", "r") as shapefile:
         shapes = [feature["geometry"] for feature in shapefile]
 
     with rasterio.open("./data/dhanmondi/0.tif") as src:
@@ -216,8 +225,9 @@ def msk_raster():
 
 
 if __name__ == "__main__":
-    msk_raster()
-    #nparray = read_image()
+    #msk_raster()
+    nparray = read_image()
+    print(nparray.shape)
     #tallies = scan_image(nparray)
     #tallies = read_tally_from_file()
     #print_to_file(tallies)
