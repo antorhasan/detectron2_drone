@@ -288,8 +288,8 @@ def mrg_dhan_msk():
 
         i += 1
     
-    #vert_img = np.concatenate((np.zeros((top_blank,tif_width)),vert_img),axis=0)
-    #vert_img = np.concatenate((vert_img, np.zeros((bottom_blank,tif_width))),axis=0)
+    vert_img = np.concatenate((np.zeros((top_blank,vert_img.shape[1])),vert_img),axis=0)
+    vert_img = np.concatenate((vert_img, np.zeros((bottom_blank,vert_img.shape[1]))),axis=0)
 
     cv2.imwrite('./data/dhanmondi/merged_0.jpg', vert_img)
 
