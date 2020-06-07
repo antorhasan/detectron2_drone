@@ -192,6 +192,8 @@ from crop_sc import read_tally_from_file, find_boundary
 
 def mrg_dhan_msk():
     path_to_msk = './new_home/output/'
+    path_to_write = './data/dhanmondi/merged_0.jpg'
+
     file_lst = [int(f.split('.')[0]) for f in listdir(path_to_msk) if isfile(join(path_to_msk, f))]
     file_lst.sort()
     #print(file_lst)
@@ -291,7 +293,7 @@ def mrg_dhan_msk():
     vert_img = np.concatenate((np.zeros((top_blank,vert_img.shape[1])),vert_img),axis=0)
     vert_img = np.concatenate((vert_img, np.zeros((bottom_blank,vert_img.shape[1]))),axis=0)
 
-    cv2.imwrite('./data/dhanmondi/merged_0.jpg', vert_img)
+    cv2.imwrite(path_to_write, vert_img)
 
 
 
