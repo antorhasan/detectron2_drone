@@ -117,16 +117,20 @@ def make_images(nparray, tallies):
             startcol = startcol + start_offset
             stopcol = stopcol - start_offset
 
-            print('starts are', startcol, stopcol)
             if (stopcol - startcol) < constant:
                 i += 1
                 continue
-            
+            print('starts are', startcol, stopcol)
             for j in range(startcol, stopcol, window_step):
+                if stopcol - j < constant :
+                    print(stopcol-j)
+                    break
+                #print(j)
                 temp_array = nparray[i:i+constant, j:j+constant, :]
 
                 save_image(temp_array)
                 count += 1
+            #print(asd)
             i += ((window_step) - 1)
             row_ends.append(cnt-1)
         i += 1
@@ -227,10 +231,10 @@ def msk_raster():
 if __name__ == "__main__":
     #msk_raster()
     nparray = read_image()
-    print(nparray.shape)
+    #print(nparray.shape)
     #tallies = scan_image(nparray)
-    #tallies = read_tally_from_file()
+    tallies = read_tally_from_file()
     #print_to_file(tallies)
-    #make_images(nparray, tallies)
+    make_images(nparray, tallies)
     pass
 

@@ -221,7 +221,7 @@ def mrg_dhan_msk():
     i = 0
     minus_flag = True
     row_flag = True
-
+    row_count = 0
     while i < tallylen:
         if tallies[i][0] == -1 and tallies[i][1] == -1 and minus_flag == True:
             top_blank += 1
@@ -230,6 +230,7 @@ def mrg_dhan_msk():
             bottom_blank += 1
 
         if tallies[i][0] != -1 and tallies[i][1] != -1:
+            print('row_count',row_count)
             minus_flag = False
 
             startcol, stopcol = find_boundary(i, i+constant, tallies)
@@ -237,43 +238,54 @@ def mrg_dhan_msk():
             startcol = startcol + start_offset
             stopcol = stopcol - start_offset
 
-            #print('starts are', startcol, stopcol)
+            #
             row_img = np.zeros((constant,startcol))
 
             #print(row_img.shape)
             if (stopcol - startcol) < constant:
                 i += 1
                 continue
-            print('stopcol', stopcol)
+            print('starts are', startcol, stopcol)
+            counter = 0
             for j in range(startcol, stopcol, window_step):
-                print(j)
+    
+                if stopcol - j < constant :
+                    print(stopcol-j)
+                    break
+                print('col_count',counter)
                 if j == startcol :
+                    print(file_lst[0])
                     img = cv2.imread('./new_home/output/'+str(file_lst.pop(0))+'.jpg',0)
                     row_img = np.concatenate((row_img,img),axis=1)
 
                 else :
+                    print(file_lst[0])
                     img = cv2.imread('./new_home/output/'+str(file_lst.pop(0))+'.jpg',0)
                     row_img[:,-fixing_ovrlp_win:] = np.where(img[:,0:fixing_ovrlp_win]>bin_thresh, 255, row_img[:,-fixing_ovrlp_win:])
                     row_img = np.concatenate((row_img,img[:,-fixing_ovrlp_win:]),axis=1)
                     #print(row_img.shape)
-                    #print(asd)
-            row_img = np.concatenate((row_img,np.zeros((constant,tif_width-(j+constant)))),axis=1)
-            print(row_img.shape)
+                    #print(asd
+                counter += 1
+            row_img = np.concatenate((row_img,np.zeros((constant,tif_width-j))),axis=1)
+            #print(row_img.shape)
             #cv2.imwrite('./data/dhanmondi/temp.jpg',row_img)
             #print(asd)
             i += ((window_step) - 1)
-                        
+            row_count +=1
             if row_flag == True :
                 vert_img = row_img
-                i += ((window_step) - 1)
+                #i += ((window_step) - 1)
                 row_flag = False
                 #print('hwll')
+                cv2.imwrite('./data/dhanmondi/temp.jpg',vert_img)
                 continue
             #print(row_flag)
             if row_flag == False :
                 vert_img[-fixing_ovrlp_win:,:] = np.where(row_img[0:fixing_ovrlp_win,:]>bin_thresh, 255, vert_img[-fixing_ovrlp_win:,:])
-                vert_img = np.concatenate((vert_img,row_img[-fixing_ovrlp_win:,:]),axis=0)
-    
+                vert_img = np.concatenate((vert_img,row_img[fixing_ovrlp_win:,:]),axis=0)
+                cv2.imwrite('./data/dhanmondi/merged_0.jpg', vert_img)
+                #print(asd)
+
         i += 1
     
     #vert_img = np.concatenate((np.zeros((top_blank,tif_width)),vert_img),axis=0)
@@ -285,12 +297,12 @@ def mrg_dhan_msk():
 
 
 if __name__ == "__main__":
-    mrg_dhan_msk()
-    """ img = cv2.imread('./data/dhanmondi/temp.jpg',0)
+    #mrg_dhan_msk()
+    img = cv2.imread('./data/dhanmondi/merged_0.jpg',0)
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     cv2.imshow('image',img)
     cv2.waitKey(0)
-    cv2.destroyAllWindows() """
+    cv2.destroyAllWindows()
     #shutil.copy('/media/antor/Transcend/drone/data/dhanmondi/100MEDIA/'+list_img[i],'/media/antor/Transcend/temp/')
     #wrt_geo_viz()
     #coor_to_geojson()
